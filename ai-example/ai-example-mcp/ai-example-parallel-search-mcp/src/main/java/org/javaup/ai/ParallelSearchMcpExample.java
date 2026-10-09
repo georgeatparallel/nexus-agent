@@ -5,6 +5,7 @@ import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
 import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.PrintStream;
 import java.time.Duration;
@@ -25,6 +26,9 @@ public final class ParallelSearchMcpExample {
         Map<String, Object> arguments = arguments(args);
         try (McpSyncClient client = createClient(SERVER_URL)) {
             execute(client, args[0], arguments, System.out);
+        } finally {
+            // 独立命令行入口退出时释放 SDK 使用的共享调度器，避免 exec:java 等待后台线程。
+            Schedulers.shutdownNow();
         }
     }
 
